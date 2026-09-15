@@ -1,697 +1,853 @@
+-- ==========================================
+-- DOEAK HUB V5 | ULTIMATE EMBED + UI SCALE
+-- ==========================================
 
-local _junk = 12345; function _junkFunc() return _junk * 9 end
+if not game:IsLoaded() then game.Loaded:Wait() end
 
-if not v1:v2() then v1.v3:v4() end
-local v5 = v1:v6(v7("return '\\v8\\v9\\v10\\v11\\v12\\v13\\v14'")())
-local v15 = v1:v6(v7("return '\\v16\\v17\\v18\\v19\\v12\\v13\\v20\\v21\\v22\\v12'")())
-local v23 = v1:v6(v7("return '\\v24\\v14\\v12\\v13\\v25\\v18\\v26\\v17\\v27\\v19\\v12\\v13\\v20\\v21\\v22\\v12'")())
-local v28 = v1:v6(v7("return '\\v29\\v30\\v13\\v31\\v14\\v26\\v10\\v22\\v12'")())
-local v32 = v1:v6(v7("return '\\v33\\v30\\v13\\v12\\v34\\v17\\v21'")())
-local v35 = v1:v6(v7("return '\\v36\\v37\\v12\\v12\\v18\\v19\\v12\\v13\\v20\\v21\\v22\\v12'")())
-local v38 = v1:v6(v7("return '\\v39\\v27\\v27\\v26\\v19\\v12\\v13\\v20\\v21\\v22\\v12'")())
-local v40 = v1:v6(v7("return '\\v36\\v12\\v9\\v12\\v26\\v30\\v13\\v27\\v19\\v12\\v13\\v20\\v21\\v22\\v12'")())
-local v41 = v1:v6(v7("return '\\v16\\v12\\v26\\v9\\v21\\v22\\v10\\v27\\v12\\v42\\v19\\v27\\v30\\v13\\v10\\v43\\v12'")())
-local v44 = v1:v6(v7("return '\\v45\\v21\\v43\\v46\\v27\\v21\\v18\\v43'")())
-local v47 = v5.v47
-local v48 = v28.v49
-if v32:v50(v7("return '\\v51\\v30\\v12\\v10\\v31\\v39\\v17\\v52\\v53\\v54\\v24\\v25'")()) then
-v32.v55:v56()
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+local HttpService = game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Lighting = game:GetService("Lighting")
+
+local LocalPlayer = Players.LocalPlayer
+local Camera = Workspace.CurrentCamera
+
+if CoreGui:FindFirstChild("DoeakHubV5UI") then
+    CoreGui.DoeakHubV5UI:Destroy()
 end
-local v57 = {
-v58 = false,
-v59 = false,
-v60 = 400,
-v61 = false,
-v62 = false,
-v63 = false,
-v64 = false,
-v65 = false,
-v66 = 20,
-v67 = false,
-v68 = v7("return '\\v69\\v12\\v9\\v12\\v12'")(),
-v70 = 40,
-v71 = false,
-v72 = 1.0,
-v73 = false,
-v74 = 2.5
+
+-- ===== CẤU HÌNH HỆ THỐNG =====
+local Settings = {
+    AimEnabled = false,
+    AimLock = false,
+    FOV = 400,
+    FPSBoost = false,
+    RemoveClouds = false,
+    AntiAFK = false,
+    AutoHop20m = false,
+    AutoTpLowHealth = false,
+    HealthThreshold = 20,
+    AttackAura = false,
+    WeaponType = "Melee",
+    AuraRange = 40,
+    WaterWalk = false,
+    UIScale = 1.0,
+    FastSkill = false,
+    FastSkillSpeed = 2.5
 }
-local v75 = v76.v77(-5870, 20, -5060)
-local v78 = v41:v50(v7("return '\\v69\\v30\\v42\\v17\\v9\\v12\\v14'")()) and v41.v79:v50(v7("return '\\v80\\v12\\v27'")())
-local v81 = v78 and v78:v50(v7("return '\\v16\\v82\\v83\\v16\\v12\\v43\\v21\\v14\\v27\\v12\\v13\\v84\\v27\\v27\\v10\\v22\\v31'")())
-local v85 = v78 and v78:v50(v7("return '\\v16\\v82\\v83\\v16\\v12\\v43\\v21\\v14\\v27\\v12\\v13\\v39\\v21\\v27'")())
-local function v86(v87)
-if not v87 then return end
-local v88 = v87:v89(v7("return '\\v39\\v17\\v90\\v10\\v18\\v30\\v21\\v42'")(), 3)
-if not v88 then return end
-local v91 = v88:v89(v7("return '\\v84\\v18\\v21\\v90\\v10\\v27\\v30\\v13'")(), 3)
-if v91 then
-v91.v92:v93(function(v94)
-if v57.v73 then
-v94:v95(v57.v74)
+
+local HotAndColdCFrame = CFrame.new(-5870, 20, -5060)
+
+local ModulesNet = ReplicatedStorage:FindFirstChild("Modules") and ReplicatedStorage.Modules:FindFirstChild("Net")
+local RegisterAttack = ModulesNet and ModulesNet:FindFirstChild("RE/RegisterAttack")
+local RegisterHit = ModulesNet and ModulesNet:FindFirstChild("RE/RegisterHit")
+
+-- ===== LOGIC BOOT TUNG CHIÊU NHANH (FAST SKILL) =====
+local function applyFastSkill(char)
+    if not char then return end
+    local hum = char:WaitForChild("Humanoid", 3)
+    if not hum then return end
+    local animator = hum:WaitForChild("Animator", 3)
+    if animator then
+        animator.AnimationPlayed:Connect(function(track)
+            if Settings.FastSkill then
+                track:AdjustSpeed(Settings.FastSkillSpeed)
+            end
+        end)
+    end
 end
+
+LocalPlayer.CharacterAdded:Connect(applyFastSkill)
+if LocalPlayer.Character then applyFastSkill(LocalPlayer.Character) end
+
+-- ===== FOV CIRCLE & TRACER =====
+local FOVCircle = Drawing.new("Circle")
+FOVCircle.Visible = false
+FOVCircle.Radius = Settings.FOV
+FOVCircle.Color = Color3.fromRGB(0, 229, 255)
+FOVCircle.Thickness = 1.8
+FOVCircle.Transparency = 0.8
+FOVCircle.Filled = false
+
+local TargetTracer = Drawing.new("Line")
+TargetTracer.Visible = false
+TargetTracer.Color = Color3.fromRGB(0, 229, 255)
+TargetTracer.Thickness = 2
+TargetTracer.Transparency = 0.9
+
+local MobileGui = Instance.new("ScreenGui")
+MobileGui.Name = "DoeakMobileGui"
+MobileGui.ResetOnSpawn = false
+MobileGui.Parent = CoreGui
+
+local FOVKnob = Instance.new("ImageButton")
+FOVKnob.Name = "FOVKnob"
+FOVKnob.Size = UDim2.new(0, 28, 0, 28)
+FOVKnob.BackgroundColor3 = Color3.fromRGB(0, 229, 255)
+FOVKnob.Visible = false
+FOVKnob.Active = true
+FOVKnob.Draggable = true
+FOVKnob.Parent = MobileGui
+
+local KnobCorner = Instance.new("UICorner")
+KnobCorner.CornerRadius = UDim.new(1, 0)
+KnobCorner.Parent = FOVKnob
+
+local isKnobDragging = false
+
+FOVKnob.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        isKnobDragging = true
+    end
 end)
-end
-end
-v47.v96:v93(v86)
-if v47.v97 then v86(v47.v97) end
-local v98 = v99.v77(v7("return '\\v33\\v21\\v13\\v22\\v9\\v12'")())
-v98.v100 = false
-v98.v101 = v57.v60
-v98.v102 = v103.v104(0, 229, 255)
-v98.v105 = 1.8
-v98.v106 = 0.8
-v98.v107 = false
-local v108 = v99.v77(v7("return '\\v45\\v21\\v18\\v12'")())
-v108.v100 = false
-v108.v102 = v103.v104(0, 229, 255)
-v108.v105 = 2
-v108.v106 = 0.9
-local v109 = v110.v77(v7("return '\\v19\\v22\\v13\\v12\\v12\\v18\\v34\\v17\\v21'")())
-v109.v111 = v7("return '\\v51\\v30\\v12\\v10\\v31\\v69\\v30\\v52\\v21\\v9\\v12\\v34\\v17\\v21'")()
-v109.v112 = false
-v109.v113 = v32
-local v114 = v110.v77(v7("return '\\v25\\v90\\v10\\v43\\v12\\v115\\v17\\v27\\v27\\v30\\v18'")())
-v114.v111 = v7("return '\\v116\\v117\\v53\\v118\\v18\\v30\\v52'")()
-v114.v119 = v120.v77(0, 28, 0, 28)
-v114.v121 = v103.v104(0, 229, 255)
-v114.v100 = false
-v114.v122 = true
-v114.v123 = true
-v114.v113 = v109
-local v124 = v110.v77(v7("return '\\v24\\v25\\v33\\v30\\v13\\v18\\v12\\v13'")())
-v124.v125 = v126.v77(1, 0)
-v124.v113 = v114
-local v127 = false
-v114.v128:v93(function(v129)
-if v129.v130 == v131.v130.v132 or v129.v130 == v131.v130.v133 then
-v127 = true
-end
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        isKnobDragging = false
+    end
 end)
-v23.v134:v93(function(v129)
-if v129.v130 == v131.v130.v132 or v129.v130 == v131.v130.v133 then
-v127 = false
-end
+
+FOVKnob.Changed:Connect(function(prop)
+    if prop == "Position" and Settings.AimEnabled and isKnobDragging then
+        local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+        local knobPos = Vector2.new(FOVKnob.AbsolutePosition.X + 14, FOVKnob.AbsolutePosition.Y + 14)
+        local dist = (knobPos - center).Magnitude
+        Settings.FOV = math.clamp(math.floor(dist), 150, 1300)
+    end
 end)
-v114.v135:v93(function(v136)
-if v136 == v7("return '\\v8\\v30\\v14\\v21\\v27\\v21\\v30\\v18'")() and v57.v58 and v127 then
-local v137 = v138.v77(v48.v139.v140 / 2, v48.v139.v141 / 2)
-local v142 = v138.v77(v114.v143.v140 + 14, v114.v143.v141 + 14)
-local v144 = (v142 - v137).v145
-v57.v60 = v146.v147(v146.v148(v144), 150, 1300)
+
+-- ===== KIỂM TRA MỤC TIÊU =====
+local function canAttack(player)
+    if not player or player == LocalPlayer or not player.Character then return false end
+    local char = player.Character
+    local hum = char:FindFirstChild("Humanoid")
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    
+    if not hum or hum.Health <= 0 or not hrp then return false end
+    if char:FindFirstChild("SafeZone") or char:FindFirstChild("NonPvP") then return false end
+    if player:FindFirstChild("InSafeZone") and player.InSafeZone.Value == true then return false end
+    
+    local pvpData = player:FindFirstChild("Data") and player.Data:FindFirstChild("PvP") or player:FindFirstChild("PvP")
+    if pvpData and pvpData.Value == false then return false end
+    
+    return true
 end
+
+local function getValidTarget()
+    local closest = nil
+    local shortestDist = Settings.FOV
+    local mousePos = UserInputService:GetMouseLocation()
+    
+    for _, player in pairs(Players:GetPlayers()) do
+        if canAttack(player) then
+            local head = player.Character:FindFirstChild("Head")
+            if head then
+                local screenPoint, onScreen = Camera:WorldToViewportPoint(head.Position)
+                if onScreen then
+                    local dist = (Vector2.new(screenPoint.X, screenPoint.Y) - mousePos).Magnitude
+                    if dist < shortestDist then
+                        shortestDist = dist
+                        closest = player
+                    end
+                end
+            end
+        end
+    end
+    return closest
+end
+
+-- ===== RENDER LOOP =====
+RunService.RenderStepped:Connect(function()
+    local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    FOVCircle.Position = center
+    FOVCircle.Radius = Settings.FOV
+    FOVCircle.Visible = Settings.AimEnabled
+    FOVKnob.Visible = Settings.AimEnabled
+
+    if Settings.AimEnabled and not isKnobDragging then
+        FOVKnob.Position = UDim2.new(0, center.X + Settings.FOV - 14, 0, center.Y - 14)
+    end
+
+    if Settings.AimEnabled then
+        local target = getValidTarget()
+        if target and target.Character and target.Character:FindFirstChild("Head") then
+            local head = target.Character.Head
+            if Settings.AimLock then
+                Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
+            end
+            
+            local myHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if myHRP then
+                local myScreen = Camera:WorldToViewportPoint(myHRP.Position)
+                local targetScreen = Camera:WorldToViewportPoint(head.Position)
+                if myScreen.Z > 0 and targetScreen.Z > 0 then
+                    TargetTracer.From = Vector2.new(myScreen.X, myScreen.Y)
+                    TargetTracer.To = Vector2.new(targetScreen.X, targetScreen.Y)
+                    TargetTracer.Visible = true
+                else
+                    TargetTracer.Visible = false
+                end
+            end
+        else
+            TargetTracer.Visible = false
+        end
+    else
+        TargetTracer.Visible = false
+    end
 end)
-local function v149(v150)
-if not v150 or v150 == v47 or not v150.v97 then return false end
-local v87 = v150.v97
-local v88 = v87:v50(v7("return '\\v39\\v17\\v90\\v10\\v18\\v30\\v21\\v42'")())
-local v151 = v87:v50(v7("return '\\v39\\v17\\v90\\v10\\v18\\v30\\v21\\v42\\v16\\v30\\v30\\v27\\v8\\v10\\v13\\v27'")())
-if not v88 or v88.v152 <= 0 or not v151 then return false end
-if v87:v50(v7("return '\\v19\\v10\\v153\\v12\\v154\\v30\\v18\\v12'")()) or v87:v50(v7("return '\\v80\\v30\\v18\\v8\\v20\\v8'")()) then return false end
-if v150:v50(v7("return '\\v25\\v18\\v19\\v10\\v153\\v12\\v154\\v30\\v18\\v12'")()) and v150.v155.v156 == true then return false end
-local v157 = v150:v50(v7("return '\\v51\\v10\\v27\\v10'")()) and v150.v158:v50(v7("return '\\v8\\v20\\v8'")()) or v150:v50(v7("return '\\v8\\v20\\v8'")())
-if v157 and v157.v156 == false then return false end
-return true
-end
-local function v159()
-local v160 = nil
-local v161 = v57.v60
-local v162 = v23:v163()
-for v164, v150 in v165(v5:v166()) do
-if v149(v150) then
-local v167 = v150.v97:v50(v7("return '\\v39\\v12\\v10\\v42'")())
-if v167 then
-local v168, v169 = v48:v170(v167.v171)
-if v169 then
-local v144 = (v138.v77(v168.v140, v168.v141) - v162).v145
-if v144 < v161 then
-v161 = v144
-v160 = v150
-end
-end
-end
-end
-end
-return v160
-end
-v15.v172:v93(function()
-local v137 = v138.v77(v48.v139.v140 / 2, v48.v139.v141 / 2)
-v98.v171 = v137
-v98.v101 = v57.v60
-v98.v100 = v57.v58
-v114.v100 = v57.v58
-if v57.v58 and not v127 then
-v114.v171 = v120.v77(0, v137.v140 + v57.v60 - 14, 0, v137.v141 - 14)
-end
-if v57.v58 then
-local v173 = v159()
-if v173 and v173.v97 and v173.v97:v50(v7("return '\\v39\\v12\\v10\\v42'")()) then
-local v167 = v173.v97.v174
-if v57.v59 then
-v48.v76 = v76.v77(v48.v76.v171, v167.v171)
-end
-local v175 = v47.v97 and v47.v97:v50(v7("return '\\v39\\v17\\v90\\v10\\v18\\v30\\v21\\v42\\v16\\v30\\v30\\v27\\v8\\v10\\v13\\v27'")())
-if v175 then
-local v176 = v48:v170(v175.v171)
-local v177 = v48:v170(v167.v171)
-if v176.v178 > 0 and v177.v178 > 0 then
-v108.v179 = v138.v77(v176.v140, v176.v141)
-v108.v180 = v138.v77(v177.v140, v177.v141)
-v108.v100 = true
-else
-v108.v100 = false
-end
-end
-else
-v108.v100 = false
-end
-else
-v108.v100 = false
-end
+
+-- ==========================================
+-- GIAO DIỆN UI EMBED CAO CẤP + BO GÓC
+-- ==========================================
+local DoeakUI = Instance.new("ScreenGui")
+DoeakUI.Name = "DoeakHubV5UI"
+DoeakUI.ResetOnSpawn = false
+DoeakUI.Parent = CoreGui
+
+-- Nút Thu Nhỏ Tròn
+local DragonBtn = Instance.new("ImageButton")
+DragonBtn.Name = "DragonToggleBtn"
+DragonBtn.Size = UDim2.new(0, 48, 0, 48)
+DragonBtn.Position = UDim2.new(0, 25, 0.45, 0)
+DragonBtn.BackgroundColor3 = Color3.fromRGB(13, 15, 22)
+DragonBtn.Visible = false
+DragonBtn.Active = true
+DragonBtn.Draggable = true
+DragonBtn.Parent = DoeakUI
+
+local DragonText = Instance.new("TextLabel")
+DragonText.Size = UDim2.new(1, 0, 1, 0)
+DragonText.BackgroundTransparency = 1
+DragonText.Text = "⚡"
+DragonText.TextSize = 22
+DragonText.Parent = DragonBtn
+
+local DragonCorner = Instance.new("UICorner")
+DragonCorner.CornerRadius = UDim.new(1, 0)
+DragonCorner.Parent = DragonBtn
+
+local DragonStroke = Instance.new("UIStroke")
+DragonStroke.Color = Color3.fromRGB(0, 229, 255)
+DragonStroke.Thickness = 2
+DragonStroke.Parent = DragonBtn
+
+-- Khung Main Embed
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 560, 0, 370)
+MainFrame.Position = UDim2.new(0.5, -280, 0.5, -185)
+MainFrame.BackgroundColor3 = Color3.fromRGB(13, 14, 18)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = DoeakUI
+
+-- TÍNH NĂNG UI SCALE
+local MainScale = Instance.new("UIScale")
+MainScale.Scale = Settings.UIScale
+MainScale.Parent = MainFrame
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 10)
+MainCorner.Parent = MainFrame
+
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Color = Color3.fromRGB(30, 34, 45)
+MainStroke.Thickness = 1.5
+MainStroke.Parent = MainFrame
+
+-- Thanh Accent Dọc Embed
+local EmbedAccent = Instance.new("Frame")
+EmbedAccent.Size = UDim2.new(0, 4, 1, -20)
+EmbedAccent.Position = UDim2.new(0, 10, 0, 10)
+EmbedAccent.BackgroundColor3 = Color3.fromRGB(0, 229, 255)
+EmbedAccent.BorderSizePixel = 0
+EmbedAccent.Parent = MainFrame
+
+local AccentCorner = Instance.new("UICorner")
+AccentCorner.CornerRadius = UDim.new(0, 4)
+AccentCorner.Parent = EmbedAccent
+
+-- TopBar Header
+local TopBar = Instance.new("Frame")
+TopBar.Size = UDim2.new(1, -30, 0, 40)
+TopBar.Position = UDim2.new(0, 22, 0, 0)
+TopBar.BackgroundTransparency = 1
+TopBar.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -50, 1, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "DOEAK HUB V5 <font color=\"#00E5FF\">•</font> ULTIMATE EMBED"
+Title.RichText = true
+Title.TextColor3 = Color3.fromRGB(240, 240, 245)
+Title.TextSize = 13
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = TopBar
+
+local MinimizeBtn = Instance.new("TextButton")
+MinimizeBtn.Size = UDim2.new(0, 28, 0, 28)
+MinimizeBtn.Position = UDim2.new(1, -10, 0, 6)
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(22, 25, 35)
+MinimizeBtn.Text = "—"
+MinimizeBtn.TextColor3 = Color3.fromRGB(0, 229, 255)
+MinimizeBtn.Font = Enum.Font.GothamBold
+MinimizeBtn.TextSize = 12
+MinimizeBtn.Parent = TopBar
+
+local MinCorner = Instance.new("UICorner")
+MinCorner.CornerRadius = UDim.new(0, 6)
+MinCorner.Parent = MinimizeBtn
+
+MinimizeBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = false
+    DragonBtn.Visible = true
 end)
-local v181 = v110.v77(v7("return '\\v19\\v22\\v13\\v12\\v12\\v18\\v34\\v17\\v21'")())
-v181.v111 = v7("return '\\v51\\v30\\v12\\v10\\v31\\v39\\v17\\v52\\v53\\v54\\v24\\v25'")()
-v181.v112 = false
-v181.v113 = v32
-local v182 = v110.v77(v7("return '\\v25\\v90\\v10\\v43\\v12\\v115\\v17\\v27\\v27\\v30\\v18'")())
-v182.v111 = v7("return '\\v51\\v13\\v10\\v43\\v30\\v18\\v36\\v30\\v43\\v43\\v9\\v12\\v115\\v27\\v18'")()
-v182.v119 = v120.v77(0, 48, 0, 48)
-v182.v171 = v120.v77(0, 25, 0.45, 0)
-v182.v121 = v103.v104(13, 15, 22)
-v182.v100 = false
-v182.v122 = true
-v182.v123 = true
-v182.v113 = v181
-local v183 = v110.v77(v7("return '\\v36\\v12\\v184\\v27\\v45\\v10\\v52\\v12\\v9'")())
-v183.v119 = v120.v77(1, 0, 1, 0)
-v183.v185 = 1
-v183.v186 = v7("return '\\v187\\v188\\v189'")()
-v183.v190 = 22
-v183.v113 = v182
-local v191 = v110.v77(v7("return '\\v24\\v25\\v33\\v30\\v13\\v18\\v12\\v13'")())
-v191.v125 = v126.v77(1, 0)
-v191.v113 = v182
-local v192 = v110.v77(v7("return '\\v24\\v25\\v19\\v27\\v13\\v30\\v31\\v12'")())
-v192.v102 = v103.v104(0, 229, 255)
-v192.v105 = 2
-v192.v113 = v182
-local v193 = v110.v77(v7("return '\\v116\\v13\\v10\\v90\\v12'")())
-v193.v111 = v7("return '\\v69\\v10\\v21\\v18\\v116\\v13\\v10\\v90\\v12'")()
-v193.v119 = v120.v77(0, 560, 0, 370)
-v193.v171 = v120.v77(0.5, -280, 0.5, -185)
-v193.v121 = v103.v104(13, 14, 18)
-v193.v194 = 0
-v193.v122 = true
-v193.v123 = true
-v193.v113 = v181
-local v195 = v110.v77(v7("return '\\v24\\v25\\v19\\v22\\v10\\v9\\v12'")())
-v195.v196 = v57.v72
-v195.v113 = v193
-local v197 = v110.v77(v7("return '\\v24\\v25\\v33\\v30\\v13\\v18\\v12\\v13'")())
-v197.v125 = v126.v77(0, 10)
-v197.v113 = v193
-local v198 = v110.v77(v7("return '\\v24\\v25\\v19\\v27\\v13\\v30\\v31\\v12'")())
-v198.v102 = v103.v104(30, 34, 45)
-v198.v105 = 1.5
-v198.v113 = v193
-local v199 = v110.v77(v7("return '\\v116\\v13\\v10\\v90\\v12'")())
-v199.v119 = v120.v77(0, 4, 1, -20)
-v199.v171 = v120.v77(0, 10, 0, 10)
-v199.v121 = v103.v104(0, 229, 255)
-v199.v194 = 0
-v199.v113 = v193
-local v200 = v110.v77(v7("return '\\v24\\v25\\v33\\v30\\v13\\v18\\v12\\v13'")())
-v200.v125 = v126.v77(0, 4)
-v200.v113 = v199
-local v201 = v110.v77(v7("return '\\v116\\v13\\v10\\v90\\v12'")())
-v201.v119 = v120.v77(1, -30, 0, 40)
-v201.v171 = v120.v77(0, 22, 0, 0)
-v201.v185 = 1
-v201.v113 = v193
-local v202 = v110.v77(v7("return '\\v36\\v12\\v184\\v27\\v45\\v10\\v52\\v12\\v9'")())
-v202.v119 = v120.v77(1, -50, 1, 0)
-v202.v185 = 1
-v202.v186 = v7("return '\\v51\\v117\\v82\\v84\\v118\\v203\\v39\\v24\\v115\\v203\\v53\\v54\\v203\\v204\\v153\\v30\\v18\\v27\\v203\\v22\\v30\\v9\\v30\\v13\\v205\\v206'")()#00E5FF\v7("return '\\v207\\v187\\v208\\v209\\v204\\v83\\v153\\v30\\v18\\v27\\v207\\v203\\v24\\v45\\v36\\v25\\v69\\v84\\v36\\v82\\v203\\v82\\v69\\v115\\v82\\v51'")()
-v202.v210 = true
-v202.v211 = v103.v104(240, 240, 245)
-v202.v190 = 13
-v202.v212 = v131.v212.v213
-v202.v214 = v131.v214.v215
-v202.v113 = v201
-local v216 = v110.v77(v7("return '\\v36\\v12\\v184\\v27\\v115\\v17\\v27\\v27\\v30\\v18'")())
-v216.v119 = v120.v77(0, 28, 0, 28)
-v216.v171 = v120.v77(1, -10, 0, 6)
-v216.v121 = v103.v104(22, 25, 35)
-v216.v186 = v7("return '\\v187\\v208\\v217'")()
-v216.v211 = v103.v104(0, 229, 255)
-v216.v212 = v131.v212.v213
-v216.v190 = 12
-v216.v113 = v201
-local v218 = v110.v77(v7("return '\\v24\\v25\\v33\\v30\\v13\\v18\\v12\\v13'")())
-v218.v125 = v126.v77(0, 6)
-v218.v113 = v216
-v216.v219:v93(function()
-v193.v100 = false
-v182.v100 = true
+
+DragonBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = true
+    DragonBtn.Visible = false
 end)
-v182.v219:v93(function()
-v193.v100 = true
-v182.v100 = false
-end)
-local v220 = v110.v77(v7("return '\\v116\\v13\\v10\\v90\\v12'")())
-v220.v119 = v120.v77(0, 140, 1, -52)
-v220.v171 = v120.v77(0, 22, 0, 42)
-v220.v121 = v103.v104(18, 20, 26)
-v220.v194 = 0
-v220.v113 = v193
-local v221 = v110.v77(v7("return '\\v24\\v25\\v33\\v30\\v13\\v18\\v12\\v13'")())
-v221.v125 = v126.v77(0, 8)
-v221.v113 = v220
-local v222 = v110.v77(v7("return '\\v24\\v25\\v45\\v21\\v14\\v27\\v45\\v10\\v11\\v30\\v17\\v27'")())
-v222.v113 = v220
-v222.v223 = v131.v223.v224
-v222.v225 = v126.v77(0, 4)
-local v226 = v110.v77(v7("return '\\v24\\v25\\v8\\v10\\v42\\v42\\v21\\v18\\v43'")())
-v226.v227 = v126.v77(0, 6)
-v226.v228 = v126.v77(0, 6)
-v226.v229 = v126.v77(0, 6)
-v226.v113 = v220
-local v230 = v110.v77(v7("return '\\v116\\v13\\v10\\v90\\v12'")())
-v230.v119 = v120.v77(1, -180, 1, -52)
-v230.v171 = v120.v77(0, 168, 0, 42)
-v230.v121 = v103.v104(18, 20, 26)
-v230.v194 = 0
-v230.v113 = v193
-local v231 = v110.v77(v7("return '\\v24\\v25\\v33\\v30\\v13\\v18\\v12\\v13'")())
-v231.v125 = v126.v77(0, 8)
-v231.v113 = v230
-local v232 = v110.v77(v7("return '\\v24\\v25\\v8\\v10\\v42\\v42\\v21\\v18\\v43'")())
-v232.v227 = v126.v77(0, 6)
-v232.v233 = v126.v77(0, 6)
-v232.v228 = v126.v77(0, 6)
-v232.v229 = v126.v77(0, 6)
-v232.v113 = v230
-local v234 = {}
-local v235 = {}
-local function v236(v237, v238)
-local v239 = v110.v77(v7("return '\\v19\\v22\\v13\\v30\\v9\\v9\\v21\\v18\\v43\\v116\\v13\\v10\\v90\\v12'")())
-v239.v119 = v120.v77(1, 0, 1, 0)
-v239.v185 = 1
-v239.v240 = 2
-v239.v241 = v103.v104(0, 229, 255)
-v239.v100 = false
-v239.v113 = v230
-local v242 = v110.v77(v7("return '\\v24\\v25\\v45\\v21\\v14\\v27\\v45\\v10\\v11\\v30\\v17\\v27'")())
-v242.v113 = v239
-v242.v223 = v131.v223.v224
-v242.v225 = v126.v77(0, 6)
-local v243 = v110.v77(v7("return '\\v36\\v12\\v184\\v27\\v115\\v17\\v27\\v27\\v30\\v18'")())
-v243.v119 = v120.v77(1, 0, 0, 34)
-v243.v121 = v103.v104(22, 25, 33)
-v243.v194 = 0
-v243.v186 = v237
-v243.v211 = v103.v104(130, 135, 150)
-v243.v212 = v131.v212.v244
-v243.v190 = 11
-v243.v214 = v131.v214.v245
-v243.v113 = v220
-local v246 = v110.v77(v7("return '\\v24\\v25\\v33\\v30\\v13\\v18\\v12\\v13'")())
-v246.v125 = v126.v77(0, 6)
-v246.v113 = v243
-v234[v238] = v239
-v235[v238] = v243
-v243.v219:v93(function()
-for v247, v248 in v165(v234) do
-local v249 = (v247 == v238)
-v248.v100 = v249
-v35:v250(v235[v247], v251.v77(0.2), {
-v121 = v249 and v103.v104(28, 33, 46) or v103.v104(22, 25, 33),
-v211 = v249 and v103.v104(0, 229, 255) or v103.v104(130, 135, 150)
-}):v252()
+
+-- Sidebar Tabs (Bên Trái - Bo Góc Outer)
+local TabContainer = Instance.new("Frame")
+TabContainer.Size = UDim2.new(0, 140, 1, -52)
+TabContainer.Position = UDim2.new(0, 22, 0, 42)
+TabContainer.BackgroundColor3 = Color3.fromRGB(18, 20, 26)
+TabContainer.BorderSizePixel = 0
+TabContainer.Parent = MainFrame
+
+local TabCorner = Instance.new("UICorner")
+TabCorner.CornerRadius = UDim.new(0, 8)
+TabCorner.Parent = TabContainer
+
+local UIListLayoutTabs = Instance.new("UIListLayout")
+UIListLayoutTabs.Parent = TabContainer
+UIListLayoutTabs.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayoutTabs.Padding = UDim.new(0, 4)
+
+local TabPadding = Instance.new("UIPadding")
+TabPadding.PaddingTop = UDim.new(0, 6)
+TabPadding.PaddingLeft = UDim.new(0, 6)
+TabPadding.PaddingRight = UDim.new(0, 6)
+TabPadding.Parent = TabContainer
+
+-- Content Frame (Bên Phải - Bo Góc Outer)
+local ContentContainer = Instance.new("Frame")
+ContentContainer.Size = UDim2.new(1, -180, 1, -52)
+ContentContainer.Position = UDim2.new(0, 168, 0, 42)
+ContentContainer.BackgroundColor3 = Color3.fromRGB(18, 20, 26)
+ContentContainer.BorderSizePixel = 0
+ContentContainer.Parent = MainFrame
+
+local ContentCorner = Instance.new("UICorner")
+ContentCorner.CornerRadius = UDim.new(0, 8)
+ContentCorner.Parent = ContentContainer
+
+local ContentPadding = Instance.new("UIPadding")
+ContentPadding.PaddingTop = UDim.new(0, 6)
+ContentPadding.PaddingBottom = UDim.new(0, 6)
+ContentPadding.PaddingLeft = UDim.new(0, 6)
+ContentPadding.PaddingRight = UDim.new(0, 6)
+ContentPadding.Parent = ContentContainer
+
+local Tabs = {}
+local TabButtons = {}
+
+local function CreateTab(name, id)
+    local TabFrame = Instance.new("ScrollingFrame")
+    TabFrame.Size = UDim2.new(1, 0, 1, 0)
+    TabFrame.BackgroundTransparency = 1
+    TabFrame.ScrollBarThickness = 2
+    TabFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 229, 255)
+    TabFrame.Visible = false
+    TabFrame.Parent = ContentContainer
+    
+    local ContentLayout = Instance.new("UIListLayout")
+    ContentLayout.Parent = TabFrame
+    ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    ContentLayout.Padding = UDim.new(0, 6)
+    
+    local TabBtn = Instance.new("TextButton")
+    TabBtn.Size = UDim2.new(1, 0, 0, 34)
+    TabBtn.BackgroundColor3 = Color3.fromRGB(22, 25, 33)
+    TabBtn.BorderSizePixel = 0
+    TabBtn.Text = name
+    TabBtn.TextColor3 = Color3.fromRGB(130, 135, 150)
+    TabBtn.Font = Enum.Font.GothamMedium
+    TabBtn.TextSize = 11
+    TabBtn.TextXAlignment = Enum.TextXAlignment.Center
+    TabBtn.Parent = TabContainer
+    
+    local BtnCorner = Instance.new("UICorner")
+    BtnCorner.CornerRadius = UDim.new(0, 6)
+    BtnCorner.Parent = TabBtn
+    
+    Tabs[id] = TabFrame
+    TabButtons[id] = TabBtn
+    
+    TabBtn.MouseButton1Click:Connect(function()
+        for tId, frame in pairs(Tabs) do
+            local active = (tId == id)
+            frame.Visible = active
+            TweenService:Create(TabButtons[tId], TweenInfo.new(0.2), {
+                BackgroundColor3 = active and Color3.fromRGB(28, 33, 46) or Color3.fromRGB(22, 25, 33),
+                TextColor3 = active and Color3.fromRGB(0, 229, 255) or Color3.fromRGB(130, 135, 150)
+            }):Play()
+        end
+    end)
+    
+    return TabFrame
 end
-end)
-return v239
+
+-- DANH SÁCH TAB
+local TabInfo = CreateTab("Thông Tin", "Info")
+local TabMain = CreateTab("Aimbot & FOV", "Main")
+local TabAura = CreateTab("Attack Aura", "Aura")
+local TabOptimize = CreateTab("Tối Ưu Máy", "Optimize")
+local TabSurvival = CreateTab("Sinh Tồn", "Survival")
+local TabMisc = CreateTab("Hệ Thống", "Misc")
+
+Tabs["Info"].Visible = true
+TabButtons["Info"].BackgroundColor3 = Color3.fromRGB(28, 33, 46)
+TabButtons["Info"].TextColor3 = Color3.fromRGB(0, 229, 255)
+
+-- ==========================================
+-- ĐỊNH DẠNG TÁC VỤ UI
+-- ==========================================
+local function AddActionButton(parent, titleText, descText, initialActive, callback)
+    local Card = Instance.new("Frame")
+    Card.Size = UDim2.new(1, -8, 0, 48)
+    Card.BackgroundColor3 = Color3.fromRGB(13, 14, 18)
+    Card.BorderSizePixel = 0
+    Card.Parent = parent
+
+    local CardCorner = Instance.new("UICorner")
+    CardCorner.CornerRadius = UDim.new(0, 6)
+    CardCorner.Parent = Card
+
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(1, -75, 0, 20)
+    Label.Position = UDim2.new(0, 10, 0, 6)
+    Label.BackgroundTransparency = 1
+    Label.Text = titleText
+    Label.TextColor3 = Color3.fromRGB(240, 240, 245)
+    Label.Font = Enum.Font.GothamBold
+    Label.TextSize = 11
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Parent = Card
+
+    local SubLabel = Instance.new("TextLabel")
+    SubLabel.Size = UDim2.new(1, -75, 0, 16)
+    SubLabel.Position = UDim2.new(0, 10, 0, 24)
+    SubLabel.BackgroundTransparency = 1
+    SubLabel.Text = descText
+    SubLabel.TextColor3 = Color3.fromRGB(120, 125, 140)
+    SubLabel.Font = Enum.Font.Gotham
+    SubLabel.TextSize = 9
+    SubLabel.TextXAlignment = Enum.TextXAlignment.Left
+    SubLabel.Parent = Card
+
+    local Switch = Instance.new("TextButton")
+    Switch.Size = UDim2.new(0, 42, 0, 22)
+    Switch.Position = UDim2.new(1, -52, 0.5, -11)
+    Switch.BackgroundColor3 = initialActive and Color3.fromRGB(0, 229, 255) or Color3.fromRGB(32, 36, 48)
+    Switch.Text = ""
+    Switch.AutoButtonColor = false
+    Switch.Parent = Card
+
+    local SwitchCorner = Instance.new("UICorner")
+    SwitchCorner.CornerRadius = UDim.new(1, 0)
+    SwitchCorner.Parent = Switch
+
+    local Knob = Instance.new("Frame")
+    Knob.Size = UDim2.new(0, 16, 0, 16)
+    Knob.Position = initialActive and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
+    Knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Knob.BorderSizePixel = 0
+    Knob.Parent = Switch
+
+    local KnobCorner = Instance.new("UICorner")
+    KnobCorner.CornerRadius = UDim.new(1, 0)
+    KnobCorner.Parent = Knob
+
+    local state = initialActive
+    Switch.MouseButton1Click:Connect(function()
+        state = not state
+        local targetPos = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
+        local targetColor = state and Color3.fromRGB(0, 229, 255) or Color3.fromRGB(32, 36, 48)
+
+        TweenService:Create(Knob, TweenInfo.new(0.2), {Position = targetPos}):Play()
+        TweenService:Create(Switch, TweenInfo.new(0.2), {BackgroundColor3 = targetColor}):Play()
+        callback(state)
+    end)
 end
-local v253 = v236(v7("return '\\v36\\v46\\v254\\v255\\v18\\v43\\v203\\v36\\v21\\v18'")(), v7("return '\\v25\\v18\\v153\\v30'")())
-local v256 = v236(v7("return '\\v84\\v21\\v90\\v52\\v30\\v27\\v203\\v257\\v203\\v116\\v117\\v53'")(), v7("return '\\v69\\v10\\v21\\v18'")())
-local v258 = v236(v7("return '\\v84\\v27\\v27\\v10\\v22\\v31\\v203\\v84\\v17\\v13\\v10'")(), v7("return '\\v84\\v17\\v13\\v10'")())
-local v259 = v236(v7("return '\\v36\\v260\\v261\\v262\\v21\\v203\\v263\\v264\\v17\\v203\\v69\\v254\\v189\\v11'")(), v7("return '\\v117\\v26\\v27\\v21\\v90\\v21\\v265\\v12'")())
-local v266 = v236(v7("return '\\v19\\v21\\v18\\v46\\v203\\v36\\v260\\v261\\v267\\v18'")(), v7("return '\\v19\\v17\\v13\\v20\\v21\\v20\\v10\\v9'")())
-local v268 = v236(v7("return '\\v39\\v260\\v261\\v269\\v203\\v36\\v46\\v260\\v261\\v262\\v18\\v43'")(), v7("return '\\v69\\v21\\v14\\v22'")())
-v234[v7("return '\\v25\\v18\\v153\\v30'")()].v100 = true
-v235[v7("return '\\v25\\v18\\v153\\v30'")()].v121 = v103.v104(28, 33, 46)
-v235[v7("return '\\v25\\v18\\v153\\v30'")()].v211 = v103.v104(0, 229, 255)
-local function v270(v271, v272, v273, v274, v275)
-local v276 = v110.v77(v7("return '\\v116\\v13\\v10\\v90\\v12'")())
-v276.v119 = v120.v77(1, -8, 0, 48)
-v276.v121 = v103.v104(13, 14, 18)
-v276.v194 = 0
-v276.v113 = v271
-local v277 = v110.v77(v7("return '\\v24\\v25\\v33\\v30\\v13\\v18\\v12\\v13'")())
-v277.v125 = v126.v77(0, 6)
-v277.v113 = v276
-local v278 = v110.v77(v7("return '\\v36\\v12\\v184\\v27\\v45\\v10\\v52\\v12\\v9'")())
-v278.v119 = v120.v77(1, -75, 0, 20)
-v278.v171 = v120.v77(0, 10, 0, 6)
-v278.v185 = 1
-v278.v186 = v272
-v278.v211 = v103.v104(240, 240, 245)
-v278.v212 = v131.v212.v213
-v278.v190 = 11
-v278.v214 = v131.v214.v215
-v278.v113 = v276
-local v279 = v110.v77(v7("return '\\v36\\v12\\v184\\v27\\v45\\v10\\v52\\v12\\v9'")())
-v279.v119 = v120.v77(1, -75, 0, 16)
-v279.v171 = v120.v77(0, 10, 0, 24)
-v279.v185 = 1
-v279.v186 = v273
-v279.v211 = v103.v104(120, 125, 140)
-v279.v212 = v131.v212.v280
-v279.v190 = 9
-v279.v214 = v131.v214.v215
-v279.v113 = v276
-local v281 = v110.v77(v7("return '\\v36\\v12\\v184\\v27\\v115\\v17\\v27\\v27\\v30\\v18'")())
-v281.v119 = v120.v77(0, 42, 0, 22)
-v281.v171 = v120.v77(1, -52, 0.5, -11)
-v281.v121 = v274 and v103.v104(0, 229, 255) or v103.v104(32, 36, 48)
-v281.v186 = v7("return ''")()
-v281.v282 = false
-v281.v113 = v276
-local v283 = v110.v77(v7("return '\\v24\\v25\\v33\\v30\\v13\\v18\\v12\\v13'")())
-v283.v125 = v126.v77(1, 0)
-v283.v113 = v281
-local v284 = v110.v77(v7("return '\\v116\\v13\\v10\\v90\\v12'")())
-v284.v119 = v120.v77(0, 16, 0, 16)
-v284.v171 = v274 and v120.v77(1, -19, 0.5, -8) or v120.v77(0, 3, 0.5, -8)
-v284.v121 = v103.v104(255, 255, 255)
-v284.v194 = 0
-v284.v113 = v281
-local v124 = v110.v77(v7("return '\\v24\\v25\\v33\\v30\\v13\\v18\\v12\\v13'")())
-v124.v125 = v126.v77(1, 0)
-v124.v113 = v284
-local v285 = v274
-v281.v219:v93(function()
-v285 = not v285
-local v286 = v285 and v120.v77(1, -19, 0.5, -8) or v120.v77(0, 3, 0.5, -8)
-local v287 = v285 and v103.v104(0, 229, 255) or v103.v104(32, 36, 48)
-v35:v250(v284, v251.v77(0.2), {v171 = v286}):v252()
-v35:v250(v281, v251.v77(0.2), {v121 = v287}):v252()
-v275(v285)
-end)
+
+local function AddSlider(parent, text, min, max, default, step, callback)
+    local Frame = Instance.new("Frame")
+    Frame.Size = UDim2.new(1, -8, 0, 50)
+    Frame.BackgroundColor3 = Color3.fromRGB(13, 14, 18)
+    Frame.BorderSizePixel = 0
+    Frame.Parent = parent
+
+    local FrameCorner = Instance.new("UICorner")
+    FrameCorner.CornerRadius = UDim.new(0, 6)
+    FrameCorner.Parent = Frame
+
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(1, -20, 0, 20)
+    Label.Position = UDim2.new(0, 10, 0, 5)
+    Label.BackgroundTransparency = 1
+    Label.Text = text .. ": <font color=\"#00E5FF\">" .. tostring(default) .. "</font>"
+    Label.RichText = true
+    Label.TextColor3 = Color3.fromRGB(240, 240, 245)
+    Label.Font = Enum.Font.GothamBold
+    Label.TextSize = 11
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Parent = Frame
+
+    local Track = Instance.new("TextButton")
+    Track.Size = UDim2.new(1, -20, 0, 6)
+    Track.Position = UDim2.new(0, 10, 0, 30)
+    Track.BackgroundColor3 = Color3.fromRGB(30, 34, 45)
+    Track.Text = ""
+    Track.AutoButtonColor = false
+    Track.Parent = Frame
+
+    local TrackCorner = Instance.new("UICorner")
+    TrackCorner.CornerRadius = UDim.new(1, 0)
+    TrackCorner.Parent = Track
+
+    local Fill = Instance.new("Frame")
+    Fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+    Fill.BackgroundColor3 = Color3.fromRGB(0, 229, 255)
+    Fill.BorderSizePixel = 0
+    Fill.Parent = Track
+
+    local FillCorner = Instance.new("UICorner")
+    FillCorner.CornerRadius = UDim.new(1, 0)
+    FillCorner.Parent = Fill
+
+    local SliderHead = Instance.new("Frame")
+    SliderHead.Size = UDim2.new(0, 14, 0, 14)
+    SliderHead.Position = UDim2.new(1, -7, 0.5, -7)
+    SliderHead.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    SliderHead.BorderSizePixel = 0
+    SliderHead.Parent = Fill
+
+    local HeadCorner = Instance.new("UICorner")
+    HeadCorner.CornerRadius = UDim.new(1, 0)
+    HeadCorner.Parent = SliderHead
+
+    local dragging = false
+    Track.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then 
+            dragging = true 
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then 
+            dragging = false 
+        end
+    end)
+
+    RunService.RenderStepped:Connect(function()
+        if dragging then
+            local mousePos = UserInputService:GetMouseLocation().X
+            local trackPos = Track.AbsolutePosition.X
+            local trackSize = Track.AbsoluteSize.X
+            local percent = math.clamp((mousePos - trackPos) / trackSize, 0, 1)
+            
+            local rawValue = min + (max - min) * percent
+            local value
+            if step and step < 1 then
+                value = math.floor(rawValue / step + 0.5) * step
+                value = tonumber(string.format("%.1f", value))
+            else
+                value = math.floor(rawValue)
+            end
+            
+            Fill.Size = UDim2.new((value - min) / (max - min), 0, 1, 0)
+            Label.Text = text .. ": <font color=\"#00E5FF\">" .. tostring(value) .. "</font>"
+            callback(value)
+        end
+    end)
 end
-local function v288(v271, v289, v290, v291, v292, v293, v275)
-local v294 = v110.v77(v7("return '\\v116\\v13\\v10\\v90\\v12'")())
-v294.v119 = v120.v77(1, -8, 0, 50)
-v294.v121 = v103.v104(13, 14, 18)
-v294.v194 = 0
-v294.v113 = v271
-local v295 = v110.v77(v7("return '\\v24\\v25\\v33\\v30\\v13\\v18\\v12\\v13'")())
-v295.v125 = v126.v77(0, 6)
-v295.v113 = v294
-local v278 = v110.v77(v7("return '\\v36\\v12\\v184\\v27\\v45\\v10\\v52\\v12\\v9'")())
-v278.v119 = v120.v77(1, -20, 0, 20)
-v278.v171 = v120.v77(0, 10, 0, 5)
-v278.v185 = 1
-v278.v186 = v289 .. v7("return '\\v296\\v203\\v204\\v153\\v30\\v18\\v27\\v203\\v22\\v30\\v9\\v30\\v13\\v205\\v206'")()#00E5FF\v7("return '\\v207'")() .. v297(v292) .. v7("return '\\v204\\v83\\v153\\v30\\v18\\v27\\v207'")()
-v278.v210 = true
-v278.v211 = v103.v104(240, 240, 245)
-v278.v212 = v131.v212.v213
-v278.v190 = 11
-v278.v214 = v131.v214.v215
-v278.v113 = v294
-local v298 = v110.v77(v7("return '\\v36\\v12\\v184\\v27\\v115\\v17\\v27\\v27\\v30\\v18'")())
-v298.v119 = v120.v77(1, -20, 0, 6)
-v298.v171 = v120.v77(0, 10, 0, 30)
-v298.v121 = v103.v104(30, 34, 45)
-v298.v186 = v7("return ''")()
-v298.v282 = false
-v298.v113 = v294
-local v299 = v110.v77(v7("return '\\v24\\v25\\v33\\v30\\v13\\v18\\v12\\v13'")())
-v299.v125 = v126.v77(1, 0)
-v299.v113 = v298
-local v300 = v110.v77(v7("return '\\v116\\v13\\v10\\v90\\v12'")())
-v300.v119 = v120.v77((v292 - v290) / (v291 - v290), 0, 1, 0)
-v300.v121 = v103.v104(0, 229, 255)
-v300.v194 = 0
-v300.v113 = v298
-local v301 = v110.v77(v7("return '\\v24\\v25\\v33\\v30\\v13\\v18\\v12\\v13'")())
-v301.v125 = v126.v77(1, 0)
-v301.v113 = v300
-local v302 = v110.v77(v7("return '\\v116\\v13\\v10\\v90\\v12'")())
-v302.v119 = v120.v77(0, 14, 0, 14)
-v302.v171 = v120.v77(1, -7, 0.5, -7)
-v302.v121 = v103.v104(255, 255, 255)
-v302.v194 = 0
-v302.v113 = v300
-local v303 = v110.v77(v7("return '\\v24\\v25\\v33\\v30\\v13\\v18\\v12\\v13'")())
-v303.v125 = v126.v77(1, 0)
-v303.v113 = v302
-local v304 = false
-v298.v128:v93(function(v129)
-if v129.v130 == v131.v130.v132 or v129.v130 == v131.v130.v133 then
-v304 = true
-end
-end)
-v23.v134:v93(function(v129)
-if v129.v130 == v131.v130.v132 or v129.v130 == v131.v130.v133 then
-v304 = false
-end
-end)
-v15.v172:v93(function()
-if v304 then
-local v162 = v23:v163().v140
-local v305 = v298.v143.v140
-local v306 = v298.v307.v140
-local v308 = v146.v147((v162 - v305) / v306, 0, 1)
-local v309 = v290 + (v291 - v290) * v308
-local v310
-if v293 and v293 < 1 then
-v310 = v146.v148(v309 / v293 + 0.5) * v293
-v310 = v311(v312.v313(v7("return '\\v314\\v315\\v316\\v153'")(), v310))
-else
-v310 = v146.v148(v309)
-end
-v300.v119 = v120.v77((v310 - v290) / (v291 - v290), 0, 1, 0)
-v278.v186 = v289 .. v7("return '\\v296\\v203\\v204\\v153\\v30\\v18\\v27\\v203\\v22\\v30\\v9\\v30\\v13\\v205\\v206'")()#00E5FF\v7("return '\\v207'")() .. v297(v310) .. v7("return '\\v204\\v83\\v153\\v30\\v18\\v27\\v207'")()
-v275(v310)
-end
-end)
-end
-local v317 = v110.v77(v7("return '\\v116\\v13\\v10\\v90\\v12'")())
-v317.v119 = v120.v77(1, -8, 1, -8)
-v317.v121 = v103.v104(13, 14, 18)
-v317.v194 = 0
-v317.v113 = v253
-local v318 = v110.v77(v7("return '\\v24\\v25\\v33\\v30\\v13\\v18\\v12\\v13'")())
-v318.v125 = v126.v77(0, 8)
-v318.v113 = v317
-local v319 = v110.v77(v7("return '\\v36\\v12\\v184\\v27\\v45\\v10\\v52\\v12\\v9'")())
-v319.v119 = v120.v77(1, -20, 1, -20)
-v319.v171 = v120.v77(0, 10, 0, 10)
-v319.v185 = 1
-v319.v211 = v103.v104(200, 205, 220)
-v319.v190 = 11
-v319.v212 = v131.v212.v280
-v319.v320 = true
-v319.v321 = v131.v321.v322
-v319.v214 = v131.v214.v215
-v319.v210 = true
-v319.v186 = [[
-<v323><v324 v325=v7("return '\\v326\\v327\\v327\\v82\\v54\\v116\\v116'")()>v328 v329 v330 — v331 v332 v333</v324></v323>
-• <v323>v334 v335 v336êv337 v338:</v323> v339ăv340 v341ốv342 v343 để v344 v345ểv346 v347ỹ v346ăv340 v348ậv349 v341ứv342, v350ôv340 v323ị v350ựv340.
-• <v323>v351 v196 (0.1 -> 3.0):</v323> v339ùv352 v353ỉv354 v347ív353 v355ướv342 v356 v357ệv346 v358ểv346 v355ị v359ù v360ợv349 v361ớv362 v363ọv362 v344ếv341 v323ị.
-• <v323>v364 v365óv342 v366ượv341 v366à:</v323> v367ếv341 v347ế v368 v369ắv342 v346év341 v361ớv362 v342áv342 v370óv342 v371 v372 v373òv346 8px.
+
+-- ==========================================
+-- NỘI DUNG CHI TIẾT
+-- ==========================================
+
+-- TAB INFO
+local InfoEmbed = Instance.new("Frame")
+InfoEmbed.Size = UDim2.new(1, -8, 1, -8)
+InfoEmbed.BackgroundColor3 = Color3.fromRGB(13, 14, 18)
+InfoEmbed.BorderSizePixel = 0
+InfoEmbed.Parent = TabInfo
+
+local IECorner = Instance.new("UICorner")
+IECorner.CornerRadius = UDim.new(0, 8)
+IECorner.Parent = InfoEmbed
+
+local InfoText = Instance.new("TextLabel")
+InfoText.Size = UDim2.new(1, -20, 1, -20)
+InfoText.Position = UDim2.new(0, 10, 0, 10)
+InfoText.BackgroundTransparency = 1
+InfoText.TextColor3 = Color3.fromRGB(200, 205, 220)
+InfoText.TextSize = 11
+InfoText.Font = Enum.Font.Gotham
+InfoText.TextWrapped = true
+InfoText.TextYAlignment = Enum.TextYAlignment.Top
+InfoText.TextXAlignment = Enum.TextXAlignment.Left
+InfoText.RichText = true
+InfoText.Text = [[
+<b><font color="#00E5FF">DOEAK HUB V5 — ULTIMATE EMBED EDITION</font></b>
+
+• <b>Boot Tung Chiêu Nhanh:</b> Tăng tốc Animation để thi triển kỹ năng lập tức, không bị khựng.
+
+• <b>UI Scale (0.1 -> 3.0):</b> Tùy chỉnh kích thước giao diện hiển thị phù hợp với mọi thiết bị.
+
+• <b>Bo Góc Mượt Mà:</b> Thiết kế Embed sắc nét với các góc outer bo tròn 8px.
 ]]
-v319.v113 = v317
-v270(v256, v7("return '\\v115\\v30\\v30\\v27\\v203\\v36\\v17\\v18\\v43\\v203\\v33\\v46\\v21\\v254\\v374\\v17\\v203\\v80\\v46\\v10\\v18\\v46'")(), v7("return '\\v36\\v375\\v376\\v18\\v43\\v203\\v27\\v260\\v261\\v262\\v22\\v203\\v84\\v18\\v21\\v90\\v10\\v27\\v21\\v30\\v18\\v203\\v375\\v262\\v260\\v261\\v376\\v203\\v13\\v10\\v203\\v22\\v46\\v21\\v254\\v374\\v17\\v203\\v31\\v46\\v254\\v255\\v18\\v43\\v203\\v52\\v260\\v261\\v377\\v203\\v31\\v46\\v260\\v261\\v378\\v18\\v43'")(), false, function(v361) v57.v73 = v361 end)
-v288(v256, v7("return '\\v36\\v260\\v261\\v262\\v22\\v203\\v375\\v379\\v260\\v261\\v380\\v203\\v33\\v46\\v21\\v254\\v374\\v17\\v203\\v381\\v19\\v26\\v12\\v12\\v42\\v382'")(), 1, 5, 2.5, 0.5, function(v361) v57.v74 = v361 end)
-v270(v256, v7("return '\\v84\\v21\\v90\\v52\\v30\\v27\\v203\\v383\\v203\\v36\\v13\\v10\\v22\\v12\\v13'")(), v7("return '\\v118\\v46\\v254\\v384\\v10\\v203\\v90\\v260\\v261\\v385\\v22\\v203\\v27\\v21\\v254\\v374\\v17\\v203\\v20\\v254\\v386\\v203\\v46\\v21\\v260\\v261\\v376\\v18\\v203\\v27\\v46\\v260\\v261\\v377\\v203\\v375\\v262\\v263\\v387\\v260\\v261\\v388\\v18\\v43\\v203\\v31\\v260\\v389\\v261\\v203\\v18\\v43\\v260\\v389\\v264\\v90'")(), false, function(v361) v57.v58 = v361 end)
-v270(v256, v7("return '\\v84\\v21\\v90\\v203\\v45\\v30\\v22\\v31\\v203\\v33\\v10\\v90\\v12\\v13\\v10'")(), v7("return '\\v36\\v260\\v261\\v378\\v203\\v375\\v262\\v260\\v261\\v380\\v18\\v43\\v203\\v184\\v30\\v10\\v11\\v203\\v33\\v10\\v90\\v12\\v13\\v10\\v203\\v46\\v263\\v387\\v260\\v261\\v390\\v18\\v43\\v203\\v20\\v260\\v261\\v391\\v203\\v26\\v46\\v254\\v392\\v10\\v203\\v375\\v262\\v260\\v261\\v262\\v21\\v203\\v27\\v46\\v260\\v261\\v393'")(), false, function(v361) v57.v59 = v361 end)
-v288(v256, v7("return '\\v118\\v254\\v392\\v22\\v46\\v203\\v36\\v46\\v263\\v387\\v260\\v261\\v390\\v22\\v203\\v116\\v117\\v53'")(), 150, 1300, 400, 1, function(v361) v57.v60 = v361 end)
-v270(v258, v7("return '\\v84\\v27\\v27\\v10\\v22\\v31\\v203\\v84\\v17\\v13\\v10\\v203\\v16\\v12\\v90\\v30\\v27\\v12'")(), v7("return '\\v36\\v260\\v261\\v378\\v203\\v375\\v262\\v260\\v261\\v380\\v18\\v43\\v203\\v43\\v260\\v261\\v392\\v21\\v203\\v43\\v254\\v384\\v21\\v203\\v27\\v21\\v18\\v203\\v27\\v260\\v389\\v385\\v18\\v203\\v22\\v254\\v255\\v18\\v43\\v203\\v90\\v260\\v261\\v385\\v22\\v203\\v27\\v21\\v254\\v374\\v17\\v203\\v43\\v260\\v389\\v393\\v18\\v203\\v18\\v46\\v260\\v389\\v385\\v27'")(), false, function(v361) v57.v67 = v361 end)
-local v394 = v110.v77(v7("return '\\v116\\v13\\v10\\v90\\v12'")())
-v394.v119 = v120.v77(1, -8, 0, 105)
-v394.v121 = v103.v104(13, 14, 18)
-v394.v194 = 0
-v394.v113 = v258
-local v395 = v110.v77(v7("return '\\v24\\v25\\v33\\v30\\v13\\v18\\v12\\v13'")())
-v395.v125 = v126.v77(0, 6)
-v395.v113 = v394
-local v396 = v110.v77(v7("return '\\v36\\v12\\v184\\v27\\v45\\v10\\v52\\v12\\v9'")())
-v396.v119 = v120.v77(1, -20, 0, 22)
-v396.v171 = v120.v77(0, 10, 0, 6)
-v396.v185 = 1
-v396.v186 = v7("return '\\v33\\v46\\v260\\v261\\v397\\v18\\v203\\v45\\v30\\v260\\v389\\v189\\v21\\v203\\v53\\v398\\v399\\v203\\v118\\v46\\v254\\v392\\v296'")()
-v396.v211 = v103.v104(240, 240, 245)
-v396.v212 = v131.v212.v213
-v396.v190 = 11
-v396.v214 = v131.v214.v215
-v396.v113 = v394
-local v400 = {v7("return '\\v69\\v12\\v9\\v12\\v12'")(), v7("return '\\v19\\v37\\v30\\v13\\v42'")(), v7("return '\\v34\\v17\\v18'")(), v7("return '\\v115\\v9\\v30\\v184\\v203\\v116\\v13\\v17\\v21\\v27'")()}
-local v401 = {}
-for v362, v402 in v403(v400) do
-local v404 = v110.v77(v7("return '\\v36\\v12\\v184\\v27\\v115\\v17\\v27\\v27\\v30\\v18'")())
-v404.v119 = v120.v77(0.46, 0, 0, 28)
-local v405 = (v362 % 2 == 1) and 0.03 or 0.51
-local v406 = (v362 > 2) and 65 or 32
-v404.v171 = v120.v77(v405, 0, 0, v406)
-v404.v121 = (v57.v68 == v402) and v103.v104(0, 229, 255) or v103.v104(28, 32, 44)
-v404.v186 = v402
-v404.v211 = (v57.v68 == v402) and v103.v104(10, 10, 15) or v103.v104(200, 205, 220)
-v404.v212 = v131.v212.v213
-v404.v190 = 10
-v404.v113 = v394
-local v407 = v110.v77(v7("return '\\v24\\v25\\v33\\v30\\v13\\v18\\v12\\v13'")())
-v407.v125 = v126.v77(0, 5)
-v407.v113 = v404
-v401[v402] = v404
-v404.v219:v93(function()
-v57.v68 = v402
-for v237, v408 in v165(v401) do
-local v409 = (v237 == v402)
-v35:v250(v408, v251.v77(0.15), {
-v121 = v409 and v103.v104(0, 229, 255) or v103.v104(28, 32, 44),
-v211 = v409 and v103.v104(10, 10, 15) or v103.v104(200, 205, 220)
-}):v252()
+InfoText.Parent = InfoEmbed
+
+-- TAB MAIN AIM & SKILL
+AddActionButton(TabMain, "Boot Tung Chiêu Nhanh", "Tăng tốc Animation để ra chiêu không bị khựng", false, function(v) Settings.FastSkill = v end)
+AddSlider(TabMain, "Tốc Độ Chiêu (Speed)", 1, 5, 2.5, 0.5, function(v) Settings.FastSkillSpeed = v end)
+AddActionButton(TabMain, "Aimbot + Tracer", "Khóa mục tiêu và hiển thị đường kẻ ngắm", false, function(v) Settings.AimEnabled = v end)
+AddActionButton(TabMain, "Aim Lock Camera", "Tự động xoay Camera hướng về phía đối thủ", false, function(v) Settings.AimLock = v end)
+AddSlider(TabMain, "Kích Thước FOV", 150, 1300, 400, 1, function(v) Settings.FOV = v end)
+
+-- TAB ATTACK AURA
+AddActionButton(TabAura, "Attack Aura Remote", "Tự động gửi gói tin tấn công mục tiêu gần nhất", false, function(v) Settings.AttackAura = v end)
+
+local WContainer = Instance.new("Frame")
+WContainer.Size = UDim2.new(1, -8, 0, 105)
+WContainer.BackgroundColor3 = Color3.fromRGB(13, 14, 18)
+WContainer.BorderSizePixel = 0
+WContainer.Parent = TabAura
+
+local WCorner = Instance.new("UICorner")
+WCorner.CornerRadius = UDim.new(0, 6)
+WCorner.Parent = WContainer
+
+local WLabel = Instance.new("TextLabel")
+WLabel.Size = UDim2.new(1, -20, 0, 22)
+WLabel.Position = UDim2.new(0, 10, 0, 6)
+WLabel.BackgroundTransparency = 1
+WLabel.Text = "Chọn Loại Vũ Khí:"
+WLabel.TextColor3 = Color3.fromRGB(240, 240, 245)
+WLabel.Font = Enum.Font.GothamBold
+WLabel.TextSize = 11
+WLabel.TextXAlignment = Enum.TextXAlignment.Left
+WLabel.Parent = WContainer
+
+local Weapons = {"Melee", "Sword", "Gun", "Blox Fruit"}
+local WeaponBtns = {}
+
+for i, wName in ipairs(Weapons) do
+    local wBtn = Instance.new("TextButton")
+    wBtn.Size = UDim2.new(0.46, 0, 0, 28)
+    local posX = (i % 2 == 1) and 0.03 or 0.51
+    local posY = (i > 2) and 65 or 32
+    wBtn.Position = UDim2.new(posX, 0, 0, posY)
+    wBtn.BackgroundColor3 = (Settings.WeaponType == wName) and Color3.fromRGB(0, 229, 255) or Color3.fromRGB(28, 32, 44)
+    wBtn.Text = wName
+    wBtn.TextColor3 = (Settings.WeaponType == wName) and Color3.fromRGB(10, 10, 15) or Color3.fromRGB(200, 205, 220)
+    wBtn.Font = Enum.Font.GothamBold
+    wBtn.TextSize = 10
+    wBtn.Parent = WContainer
+    
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 5)
+    Corner.Parent = wBtn
+    
+    WeaponBtns[wName] = wBtn
+    
+    wBtn.MouseButton1Click:Connect(function()
+        Settings.WeaponType = wName
+        for name, btn in pairs(WeaponBtns) do
+            local selected = (name == wName)
+            TweenService:Create(btn, TweenInfo.new(0.15), {
+                BackgroundColor3 = selected and Color3.fromRGB(0, 229, 255) or Color3.fromRGB(28, 32, 44),
+                TextColor3 = selected and Color3.fromRGB(10, 10, 15) or Color3.fromRGB(200, 205, 220)
+            }):Play()
+        end
+    end)
 end
+
+-- TAB OPTIMIZE
+AddActionButton(TabOptimize, "FPS Booster", "Tối ưu hóa chất liệu bản đồ để tăng FPS", false, function(v)
+    Settings.FPSBoost = v
+    if v then
+        for _, obj in pairs(Workspace:GetDescendants()) do
+            if obj:IsA("BasePart") and not obj:IsA("MeshPart") then
+                obj.Material = Enum.Material.SmoothPlastic
+            elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Sparkles") then
+                obj.Enabled = false
+            end
+        end
+    end
 end)
-end
-v270(v259, v7("return '\\v116\\v8\\v19\\v203\\v115\\v30\\v30\\v14\\v27\\v12\\v13'")(), v7("return '\\v36\\v260\\v261\\v262\\v21\\v203\\v263\\v387\\v17\\v203\\v46\\v254\\v384\\v10\\v203\\v22\\v46\\v260\\v389\\v385\\v27\\v203\\v9\\v21\\v260\\v261\\v269\\v17\\v203\\v52\\v260\\v389\\v410\\v18\\v203\\v375\\v262\\v260\\v261\\v267\\v203\\v375\\v262\\v260\\v261\\v376\\v203\\v27\\v375\\v376\\v18\\v43\\v203\\v116\\v8\\v19'")(), false, function(v361)
-v57.v61 = v361
-if v361 then
-for v164, v411 in v165(v28:v412()) do
-if v411:v413(v7("return '\\v115\\v10\\v14\\v12\\v8\\v10\\v13\\v27'")()) and not v411:v413(v7("return '\\v69\\v12\\v14\\v46\\v8\\v10\\v13\\v27'")()) then
-v411.v414 = v131.v414.v415
-elseif v411:v413(v7("return '\\v8\\v10\\v13\\v27\\v21\\v22\\v9\\v12\\v82\\v90\\v21\\v27\\v27\\v12\\v13'")()) or v411:v413(v7("return '\\v36\\v13\\v10\\v21\\v9'")()) or v411:v413(v7("return '\\v19\\v26\\v10\\v13\\v31\\v9\\v12\\v14'")()) then
-v411.v416 = false
-end
-end
-end
+
+AddActionButton(TabOptimize, "Xóa Mây & Hiệu Ứng", "Dọn dẹp mây trời và hiệu ứng ánh sáng gây lag", false, function(v)
+    Settings.RemoveClouds = v
+    if v then
+        local terrain = Workspace:FindFirstChildOfClass("Terrain")
+        if terrain then
+            local clouds = terrain:FindFirstChildOfClass("Clouds")
+            if clouds then clouds:Destroy() end
+        end
+        for _, effect in pairs(Lighting:GetChildren()) do
+            if effect:IsA("PostEffect") or effect:IsA("BloomEffect") or effect:IsA("BlurEffect") or effect:IsA("SunRaysEffect") then
+                effect.Enabled = false
+            end
+        end
+    end
 end)
-v270(v259, v7("return '\\v417\\v254\\v384\\v10\\v203\\v69\\v254\\v209\\v11\\v203\\v257\\v203\\v39\\v21\\v260\\v261\\v269\\v17\\v203\\v260\\v261\\v418\\v18\\v43'")(), v7("return '\\v51\\v260\\v261\\v397\\v18\\v203\\v42\\v260\\v389\\v419\\v26\\v203\\v90\\v254\\v209\\v11\\v203\\v27\\v13\\v260\\v261\\v388\\v21\\v203\\v20\\v254\\v386\\v203\\v46\\v21\\v260\\v261\\v269\\v17\\v203\\v260\\v261\\v399\\v18\\v43\\v203\\v254\\v189\\v18\\v46\\v203\\v14\\v254\\v189\\v18\\v43\\v203\\v43\\v254\\v209\\v11\\v203\\v9\\v10\\v43'")(), false, function(v361)
-v57.v62 = v361
-if v361 then
-local v420 = v28:v421(v7("return '\\v36\\v12\\v13\\v13\\v10\\v21\\v18'")())
-if v420 then
-local v422 = v420:v421(v7("return '\\v33\\v9\\v30\\v17\\v42\\v14'")())
-if v422 then v422:v56() end
-end
-for v164, v423 in v165(v44:v424()) do
-if v423:v413(v7("return '\\v8\\v30\\v14\\v27\\v82\\v153\\v153\\v12\\v22\\v27'")()) or v423:v413(v7("return '\\v115\\v9\\v30\\v30\\v90\\v82\\v153\\v153\\v12\\v22\\v27'")()) or v423:v413(v7("return '\\v115\\v9\\v17\\v13\\v82\\v153\\v153\\v12\\v22\\v27'")()) or v423:v413(v7("return '\\v19\\v17\\v18\\v16\\v10\\v11\\v14\\v82\\v153\\v153\\v12\\v22\\v27'")()) then
-v423.v416 = false
-end
-end
-end
+
+-- TAB SURVIVAL
+AddActionButton(TabSurvival, "Auto Teleport Cấp Cứu", "Dịch chuyển về Hot & Cold khi máu xuống thấp", false, function(v) Settings.AutoTpLowHealth = v end)
+AddSlider(TabSurvival, "Ngưỡng Máu Cấp Cứu (%)", 20, 50, 20, 1, function(v) Settings.HealthThreshold = v end)
+AddActionButton(TabSurvival, "Đi Trên Mặt Nước", "Tạo sàn đứng bảo vệ khi tiếp xúc với nước", false, function(v) Settings.WaterWalk = v end)
+
+-- TAB MISC / HỆ THỐNG
+AddSlider(TabMisc, "UI Scale", 0.1, 3.0, 1.0, 0.1, function(v)
+    Settings.UIScale = v
+    MainScale.Scale = v
 end)
-v270(v266, v7("return '\\v84\\v17\\v27\\v30\\v203\\v36\\v12\\v9\\v12\\v26\\v30\\v13\\v27\\v203\\v33\\v260\\v389\\v385\\v26\\v203\\v33\\v260\\v261\\v399\\v17'")(), v7("return '\\v51\\v260\\v261\\v377\\v22\\v46\\v203\\v22\\v46\\v17\\v11\\v260\\v261\\v376\\v18\\v203\\v20\\v260\\v261\\v391\\v203\\v39\\v30\\v27\\v203\\v257\\v203\\v33\\v30\\v9\\v42\\v203\\v31\\v46\\v21\\v203\\v90\\v254\\v189\\v17\\v203\\v184\\v17\\v260\\v261\\v262\\v18\\v43\\v203\\v27\\v46\\v260\\v389\\v385\\v26'")(), false, function(v361) v57.v65 = v361 end)
-v288(v266, v7("return '\\v80\\v43\\v263\\v387\\v260\\v261\\v189\\v18\\v43\\v203\\v69\\v254\\v189\\v17\\v203\\v33\\v260\\v389\\v385\\v26\\v203\\v33\\v260\\v261\\v399\\v17\\v203\\v381\\v314\\v382'")(), 20, 50, 20, 1, function(v361) v57.v66 = v361 end)
-v270(v266, v7("return '\\v375\\v379\\v21\\v203\\v36\\v13\\v254\\v374\\v18\\v203\\v69\\v260\\v389\\v425\\v27\\v203\\v80\\v263\\v387\\v260\\v261\\v390\\v22'")(), v7("return '\\v36\\v260\\v389\\v189\\v30\\v203\\v14\\v254\\v386\\v18\\v203\\v375\\v262\\v260\\v261\\v399\\v18\\v43\\v203\\v52\\v260\\v389\\v410\\v30\\v203\\v20\\v260\\v261\\v269\\v203\\v31\\v46\\v21\\v203\\v27\\v21\\v260\\v389\\v426\\v26\\v203\\v184\\v254\\v389\\v22\\v203\\v20\\v260\\v261\\v390\\v21\\v203\\v18\\v263\\v387\\v260\\v261\\v390\\v22'")(), false, function(v361) v57.v71 = v361 end)
-v288(v268, v7("return '\\v24\\v25\\v203\\v19\\v22\\v10\\v9\\v12'")(), 0.1, 3.0, 1.0, 0.1, function(v361)
-v57.v72 = v361
-v195.v196 = v361
+AddActionButton(TabMisc, "Anti-AFK (Auto Jump)", "Tự động nhảy mỗi 10 giây tránh bị ngắt kết nối", false, function(v) Settings.AntiAFK = v end)
+AddActionButton(TabMisc, "Auto Hop Random (20p)", "Tự tìm và đổi Server mới sau mỗi 20 phút", false, function(v) Settings.AutoHop20m = v end)
+
+-- ==========================================
+-- LOGIC VÒNG LẶP HỆ THỐNG
+-- ==========================================
+
+-- Anti-AFK
+task.spawn(function()
+    while task.wait(10) do
+        if Settings.AntiAFK and LocalPlayer.Character then
+            local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if hum and hum.Health > 0 then
+                hum.Jump = true
+            end
+        end
+    end
 end)
-v270(v268, v7("return '\\v84\\v18\\v27\\v21\\v427\\v84\\v116\\v118\\v203\\v381\\v84\\v17\\v27\\v30\\v203\\v428\\v17\\v90\\v26\\v382'")(), v7("return '\\v36\\v260\\v261\\v378\\v203\\v375\\v262\\v260\\v261\\v380\\v18\\v43\\v203\\v18\\v46\\v260\\v389\\v410\\v11\\v203\\v90\\v260\\v261\\v429\\v21\\v203\\v316\\v327\\v203\\v43\\v21\\v254\\v209\\v11\\v203\\v27\\v13\\v254\\v189\\v18\\v46\\v203\\v52\\v260\\v261\\v377\\v203\\v18\\v43\\v260\\v389\\v264\\v27\\v203\\v31\\v260\\v389\\v426\\v27\\v203\\v18\\v260\\v261\\v262\\v21'")(), false, function(v361) v57.v63 = v361 end)
-v270(v268, v7("return '\\v84\\v17\\v27\\v30\\v203\\v39\\v30\\v26\\v203\\v16\\v10\\v18\\v42\\v30\\v90\\v203\\v381\\v430\\v327\\v26\\v382'")(), v7("return '\\v36\\v260\\v261\\v378\\v203\\v27\\v254\\v431\\v90\\v203\\v20\\v254\\v386\\v203\\v375\\v262\\v260\\v261\\v432\\v21\\v203\\v19\\v12\\v13\\v20\\v12\\v13\\v203\\v90\\v260\\v261\\v390\\v21\\v203\\v14\\v10\\v17\\v203\\v90\\v260\\v261\\v429\\v21\\v203\\v430\\v327\\v203\\v26\\v46\\v254\\v389\\v27'")(), false, function(v361) v57.v64 = v361 end)
-v433.v434(function()
-while v433.v435(10) do
-if v57.v63 and v47.v97 then
-local v88 = v47.v97:v421(v7("return '\\v39\\v17\\v90\\v10\\v18\\v30\\v21\\v42'")())
-if v88 and v88.v152 > 0 then
-v88.v436 = true
-end
-end
-end
+
+-- Auto Hop Server
+task.spawn(function()
+    local timer = 0
+    while task.wait(1) do
+        if Settings.AutoHop20m then
+            timer = timer + 1
+            if timer >= 1200 then
+                timer = 0
+                local success, result = pcall(function()
+                    return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"))
+                end)
+                
+                if success and result and result.data then
+                    local validServers = {}
+                    for _, s in pairs(result.data) do
+                        if type(s) == "table" and s.playing < s.maxPlayers and s.id ~= game.JobId then
+                            table.insert(validServers, s.id)
+                        end
+                    end
+                    
+                    if #validServers > 0 then
+                        local randomServerId = validServers[math.random(1, #validServers)]
+                        TeleportService:TeleportToPlaceInstance(game.PlaceId, randomServerId, LocalPlayer)
+                    end
+                end
+            end
+        else
+            timer = 0
+        end
+    end
 end)
-v433.v434(function()
-local v437 = 0
-while v433.v435(1) do
-if v57.v64 then
-v437 = v437 + 1
-if v437 >= 1200 then
-v437 = 0
-local v438, v439 = v440(function()
-return v38:v441(v1:v442(v7("return '\\v46\\v27\\v27\\v26\\v14\\v296\\v83\\v83\\v43\\v10\\v90\\v12\\v14\\v315\\v13\\v30\\v52\\v9\\v30\\v184\\v315\\v22\\v30\\v90\\v83\\v20\\v316\\v83\\v43\\v10\\v90\\v12\\v14\\v83'")()..v1.v443..v7("return '\\v83\\v14\\v12\\v13\\v20\\v12\\v13\\v14\\v83\\v8\\v17\\v52\\v9\\v21\\v22\\v444\\v14\\v30\\v13\\v27\\v117\\v13\\v42\\v12\\v13\\v205\\v84\\v14\\v22\\v257\\v9\\v21\\v90\\v21\\v27\\v205\\v316\\v327\\v327'")()))
+
+-- Equip Weapon
+local function EquipWeapon(weaponCategory)
+    local backpack = LocalPlayer:FindFirstChild("Backpack")
+    local char = LocalPlayer.Character
+    if not backpack or not char then return end
+    
+    for _, tool in pairs(char:GetChildren()) do
+        if tool:IsA("Tool") and (tool.ToolTip == weaponCategory or tool:FindFirstChild(weaponCategory)) then
+            return tool
+        end
+    end
+    
+    for _, tool in pairs(backpack:GetChildren()) do
+        if tool:IsA("Tool") and (tool.ToolTip == weaponCategory or tool:FindFirstChild(weaponCategory) or string.find(tool.Name:lower(), weaponCategory:lower())) then
+            char.Humanoid:EquipTool(tool)
+            return tool
+        end
+    end
+    return nil
+end
+
+-- Attack Aura
+task.spawn(function()
+    while task.wait(0.03) do
+        if Settings.AttackAura and LocalPlayer.Character then
+            local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if myHRP then
+                local targetHRP = nil
+                local minDistance = Settings.AuraRange
+                
+                local enemiesFolder = Workspace:FindFirstChild("Enemies")
+                if enemiesFolder then
+                    for _, mob in pairs(enemiesFolder:GetChildren()) do
+                        local mHRP = mob:FindFirstChild("HumanoidRootPart")
+                        local mHum = mob:FindFirstChild("Humanoid")
+                        if mHRP and mHum and mHum.Health > 0 then
+                            local dist = (myHRP.Position - mHRP.Position).Magnitude
+                            if dist < minDistance then
+                                minDistance = dist
+                                targetHRP = mHRP
+                            end
+                        end
+                    end
+                end
+                
+                if targetHRP and RegisterAttack and RegisterHit then
+                    EquipWeapon(Settings.WeaponType)
+                    RegisterAttack:FireServer(targetHRP)
+                    task.wait(0.01)
+                    RegisterHit:FireServer(targetHRP)
+                end
+            end
+        end
+    end
 end)
-if v438 and v439 and v439.v445 then
-local v446 = {}
-for v164, v369 in v165(v439.v445) do
-if v447(v369) == v7("return '\\v27\\v10\\v52\\v9\\v12'")() and v369.v448 < v369.v449 and v369.v238 ~= v1.v450 then
-v451.v452(v446, v369.v238)
-end
-end
-if #v446 > 0 then
-local v453 = v446[v146.v454(1, #v446)]
-v40:v455(v1.v443, v453, v47)
-end
-end
-end
-else
-v437 = 0
-end
-end
+
+-- Water Walk
+local WaterPlatform = Instance.new("Part")
+WaterPlatform.Size = Vector3.new(150, 1, 150)
+WaterPlatform.Anchored = true
+WaterPlatform.Transparency = 1
+WaterPlatform.Parent = Workspace
+
+RunService.RenderStepped:Connect(function()
+    if Settings.WaterWalk and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = LocalPlayer.Character.HumanoidRootPart
+        if hrp.Position.Y < 15 and hrp.Position.Y > -10 then
+            WaterPlatform.Position = Vector3.new(hrp.Position.X, 1, hrp.Position.Z)
+        else
+            WaterPlatform.Position = Vector3.new(0, -1000, 0)
+        end
+    else
+        WaterPlatform.Position = Vector3.new(0, -1000, 0)
+    end
 end)
-local function v456(v457)
-local v458 = v47:v50(v7("return '\\v115\\v10\\v22\\v31\\v26\\v10\\v22\\v31'")())
-local v87 = v47.v97
-if not v458 or not v87 then return end
-for v164, v459 in v165(v87:v424()) do
-if v459:v413(v7("return '\\v36\\v30\\v30\\v9'")()) and (v459.v460 == v457 or v459:v50(v457)) then
-return v459
-end
-end
-for v164, v459 in v165(v458:v424()) do
-if v459:v413(v7("return '\\v36\\v30\\v30\\v9'")()) and (v459.v460 == v457 or v459:v50(v457) or v312.v461(v459.v111:v462(), v457:v462())) then
-v87.v463:v464(v459)
-return v459
-end
-end
-return nil
-end
-v433.v434(function()
-while v433.v435(0.03) do
-if v57.v67 and v47.v97 then
-local v175 = v47.v97:v50(v7("return '\\v39\\v17\\v90\\v10\\v18\\v30\\v21\\v42\\v16\\v30\\v30\\v27\\v8\\v10\\v13\\v27'")())
-if v175 then
-local v465 = nil
-local v466 = v57.v70
-local v467 = v28:v50(v7("return '\\v82\\v18\\v12\\v90\\v21\\v12\\v14'")())
-if v467 then
-for v164, v468 in v165(v467:v424()) do
-local v469 = v468:v50(v7("return '\\v39\\v17\\v90\\v10\\v18\\v30\\v21\\v42\\v16\\v30\\v30\\v27\\v8\\v10\\v13\\v27'")())
-local v470 = v468:v50(v7("return '\\v39\\v17\\v90\\v10\\v18\\v30\\v21\\v42'")())
-if v469 and v470 and v470.v152 > 0 then
-local v144 = (v175.v171 - v469.v171).v145
-if v144 < v466 then
-v466 = v144
-v465 = v469
-end
-end
-end
-end
-if v465 and v81 and v85 then
-v456(v57.v68)
-v81:v471(v465)
-v433.v435(0.01)
-v85:v471(v465)
-end
-end
-end
-end
-end)
-local v472 = v110.v77(v7("return '\\v8\\v10\\v13\\v27'")())
-v472.v119 = v473.v77(150, 1, 150)
-v472.v474 = true
-v472.v106 = 1
-v472.v113 = v28
-v15.v172:v93(function()
-if v57.v71 and v47.v97 and v47.v97:v50(v7("return '\\v39\\v17\\v90\\v10\\v18\\v30\\v21\\v42\\v16\\v30\\v30\\v27\\v8\\v10\\v13\\v27'")()) then
-local v151 = v47.v97.v475
-if v151.v171.v141 < 15 and v151.v171.v141 > -10 then
-v472.v171 = v473.v77(v151.v171.v140, 1, v151.v171.v178)
-else
-v472.v171 = v473.v77(0, -1000, 0)
-end
-else
-v472.v171 = v473.v77(0, -1000, 0)
-end
-end)
-v476(v7("return '\\v51\\v117\\v82\\v84\\v118\\v203\\v39\\v24\\v115\\v203\\v53\\v54\\v203\\v24\\v45\\v36\\v25\\v69\\v84\\v36\\v82\\v203\\v24\\v25\\v203\\v19\\v33\\v84\\v45\\v82\\v203\\v45\\v117\\v84\\v51\\v82\\v51\\v477'")())
+
+print("DOEAK HUB V5 ULTIMATE UI SCALE LOADED!")
